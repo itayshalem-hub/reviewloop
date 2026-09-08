@@ -1,0 +1,95 @@
+@import 'tailwindcss';
+
+/**
+ * Design tokens.
+ *
+ * Colour is expressed once, here, as CSS custom properties and referenced from
+ * components as `bg-[var(--token)]`. Two reasons:
+ *   1. the palette can be re-skinned without touching a single component;
+ *   2. the same variables work under the Tailwind build *and* the no-build
+ *      standalone preview, so both outputs render identically.
+ *
+ * Values are taken from a validated data-visualisation palette: the categorical
+ * blue is the product's single accent, and status hues are reserved so a colour
+ * never means "good" in one place and "series 3" in another.
+ *
+ * The product deliberately commits to a single light theme — a restrained,
+ * document-like surface is the right register for an analytics tool.
+ */
+:root {
+  color-scheme: light;
+
+  /* Type pairing: a slightly condensed grotesque for UI text, and a monospace
+     for the data furniture — eyebrow labels, axis ticks, sample sizes. The mono
+     face earns its place by making figures align in columns and by visually
+     separating "measurement" from "prose". */
+  --font-sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Surfaces. `subtle` is a pre-blended tint rather than an opacity modifier,
+     so it renders identically under both the Tailwind build and the CDN preview. */
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-subtle: #f7f6f3;
+  --surface-sunken: #f2f1ed;
+
+  /* Ink */
+  --ink-primary: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #898781;
+
+  /* Lines */
+  --border: rgba(11, 11, 11, 0.1);
+  --border-strong: rgba(11, 11, 11, 0.16);
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+
+  /* The single accent */
+  --accent: #2a78d6;
+  --accent-strong: #1c5cab;
+  --accent-wash: #eaf2fd;
+
+  /* Reserved status hues — never reused as series colours */
+  --status-good: #0ca30c;
+  --status-good-text: #006300;
+  --status-good-wash: #e9f7e9;
+  --status-warning: #fab219;
+  --status-warning-text: #7a5200;
+  --status-warning-wash: #fdf4e2;
+  --status-critical: #d03b3b;
+  --status-critical-wash: #fbeceb;
+
+  /* Chart series roles: context is muted, the outcome carries the accent */
+  --series-before: #898781;
+  --series-after: #2a78d6;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--page);
+  color: var(--ink-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * Data furniture: the small uppercase labels that name a measurement rather
+ * than speak to the reader. Applied as one class so the distinction stays
+ * consistent instead of being re-decided per component.
+ */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Recharts renders its own focus outlines on wrappers; suppress the duplicate. */
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
+}

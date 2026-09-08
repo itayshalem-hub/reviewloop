@@ -1,0 +1,24 @@
+{
+  "name": "reviewloop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "ReviewLoop — turns guest reviews into operational actions, proves the rating lift, and benchmarks it against the local market.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:standalone": "./scripts/build-standalone.sh"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "tailwindcss": "^4.0.0",
+    "vite": "^5.4.0"
+  }
+}
