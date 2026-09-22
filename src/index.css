@@ -62,6 +62,15 @@
   /* Chart series roles: context is muted, the outcome carries the accent */
   --series-before: #898781;
   --series-after: #2a78d6;
+
+  /* Portfolio map geography — decorative only, never reused as data colour.
+     Muted enough to sit behind the accent-coloured property pins. */
+  --map-water: #b7c9d6;
+  --map-park: #c3d0bc;
+  --map-plaza: #e3d7bf;
+  --map-old-city: #e7e0d0;
+  --map-old-city-line: #cabf9e;
+  --map-street: #dedcd3;
 }
 
 html,

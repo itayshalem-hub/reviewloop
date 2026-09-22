@@ -1,5 +1,6 @@
 import Card from '../ui/Card';
 import SectionHeader from '../ui/SectionHeader';
+import TabLink from '../ui/TabLink';
 import CompetitiveGap from './CompetitiveGap';
 import { formatPercentileRank, formatRating, formatRatingDelta } from '../../utils/formatters';
 
@@ -88,6 +89,7 @@ export default function BenchmarkingPanel({
   benchmark,
   internalDelta,
   portfolioAverage,
+  onNavigateToActionItems,
 }) {
   if (!property || !benchmark) {
     return (
@@ -97,6 +99,11 @@ export default function BenchmarkingPanel({
           title="Benchmarking"
           description="How this property sits against the rest of your portfolio and the local market."
         />
+        <div className="px-6 pt-5">
+          <TabLink direction="back" onClick={onNavigateToActionItems}>
+            Back to action items
+          </TabLink>
+        </div>
         <p className="px-6 py-16 text-center text-sm text-[var(--ink-muted)]">
           Select an action item to benchmark its property.
         </p>
@@ -113,6 +120,10 @@ export default function BenchmarkingPanel({
       />
 
       <div className="space-y-5 px-6 py-5">
+        <TabLink direction="back" onClick={onNavigateToActionItems}>
+          Back to action items
+        </TabLink>
+
         <div className="grid gap-5 sm:grid-cols-2">
           <InternalBenchmark internalDelta={internalDelta} portfolioAverage={portfolioAverage} />
           <ExternalBenchmark

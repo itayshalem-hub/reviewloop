@@ -1,5 +1,6 @@
 import Card from '../ui/Card';
 import SectionHeader from '../ui/SectionHeader';
+import TabLink from '../ui/TabLink';
 import BeforeAfterChart from './BeforeAfterChart';
 import GatheringDataState from './GatheringDataState';
 import ImplementationControl from './ImplementationControl';
@@ -95,6 +96,8 @@ export default function EffectivenessTracker({
   isPricingDismissed,
   onMarkImplemented,
   onDismissPricing,
+  onNavigateToActionItems,
+  onNavigateToBenchmarking,
 }) {
   if (!selectedAction || !property) {
     return (
@@ -104,6 +107,11 @@ export default function EffectivenessTracker({
           title="Effectiveness & pricing tracker"
           description="Before/after evidence that a completed action changed the rating it was meant to change."
         />
+        <div className="px-6 pt-5">
+          <TabLink direction="back" onClick={onNavigateToActionItems}>
+            Back to action items
+          </TabLink>
+        </div>
         <NoSelectionState />
       </Card>
     );
@@ -136,6 +144,10 @@ export default function EffectivenessTracker({
       />
 
       <div className="space-y-6 px-6 py-5">
+        <TabLink direction="back" onClick={onNavigateToActionItems}>
+          Back to action items
+        </TabLink>
+
         {/* What is being measured, and the control that sets the pivot date. */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -193,6 +205,12 @@ export default function EffectivenessTracker({
             totalReviews={categoryHistory.reduce((sum, entry) => sum + entry.reviewCount, 0)}
           />
         )}
+
+        <div className="border-t border-[var(--border)] pt-5">
+          <TabLink direction="forward" onClick={onNavigateToBenchmarking}>
+            See how {property.name} compares to the local market
+          </TabLink>
+        </div>
       </div>
     </Card>
   );

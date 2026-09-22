@@ -66,10 +66,16 @@ export const properties = [
   {
     id: 'apt-3-old-city',
     name: 'Apt 3 — Old City',
+    district: 'Old City',
     bedrooms: 2,
     adr: 185,
     occupancyRate: 0.72,
     overallRating: 4.5,
+    // Position in the portfolio map's 760×420 illustrative coordinate space,
+    // and which side of the pin its label should be anchored to so labels
+    // don't collide. See src/components/map/PortfolioMap.jsx.
+    mapPosition: { x: 430, y: 195 },
+    mapLabelAnchor: 'bottom',
     ratingHistory: [
       { date: '2026-01-31', category: 'Cleanliness', rating: 4.1, reviewCount: 6 },
       { date: '2026-02-28', category: 'Cleanliness', rating: 4.0, reviewCount: 5 },
@@ -88,10 +94,13 @@ export const properties = [
   {
     id: 'loft-12-harbor-view',
     name: 'Loft 12 — Harbor View',
+    district: 'Harbor District',
     bedrooms: 1,
     adr: 210,
     occupancyRate: 0.81,
     overallRating: 4.8,
+    mapPosition: { x: 610, y: 300 },
+    mapLabelAnchor: 'right',
     ratingHistory: [
       { date: '2026-01-31', category: 'Communication', rating: 4.5, reviewCount: 5 },
       { date: '2026-02-28', category: 'Communication', rating: 4.6, reviewCount: 6 },
@@ -114,10 +123,13 @@ export const properties = [
   {
     id: 'garden-house-north',
     name: 'Garden House — North Quarter',
+    district: 'North Quarter',
     bedrooms: 3,
     adr: 265,
     occupancyRate: 0.64,
     overallRating: 4.6,
+    mapPosition: { x: 330, y: 70 },
+    mapLabelAnchor: 'bottom',
     ratingHistory: [
       { date: '2026-01-31', category: 'Communication', rating: 4.2, reviewCount: 4 },
       { date: '2026-02-28', category: 'Communication', rating: 4.1, reviewCount: 5 },
@@ -137,10 +149,13 @@ export const properties = [
   {
     id: 'studio-5-market-lane',
     name: 'Studio 5 — Market Lane',
+    district: 'Market Lane',
     bedrooms: 1,
     adr: 130,
     occupancyRate: 0.88,
     overallRating: 4.3,
+    mapPosition: { x: 155, y: 200 },
+    mapLabelAnchor: 'left',
     ratingHistory: [
       // Deliberately sparse: this property is the "Gathering data" case. Three
       // points and seven reviews is not enough to draw an honest trend.
@@ -160,10 +175,13 @@ export const properties = [
   {
     id: 'townhouse-7-riverside',
     name: 'Townhouse 7 — Riverside',
+    district: 'Riverside',
     bedrooms: 3,
     adr: 290,
     occupancyRate: 0.69,
     overallRating: 4.7,
+    mapPosition: { x: 250, y: 335 },
+    mapLabelAnchor: 'bottom',
     ratingHistory: [
       // Amenities is flat — the matching action is still In Progress, so there
       // is no implementation date and therefore no before/after split to claim.

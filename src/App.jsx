@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import DashboardHeader from './components/DashboardHeader';
 import PortfolioHeroMetric from './components/PortfolioHeroMetric';
+import TabNav from './components/ui/TabNav';
+import PortfolioMap from './components/map/PortfolioMap';
 import ActionItemsPanel from './components/actionItems/ActionItemsPanel';
 import BenchmarkingPanel from './components/benchmarking/BenchmarkingPanel';
 import EffectivenessTracker from './components/tracker/EffectivenessTracker';
@@ -24,19 +26,34 @@ import {
  * — derived values are recomputed on each render from the same pure helpers,
  * which keeps the data flow readable end to end.
  *
- * The dashboard is one continuous argument in three acts:
- *   Act     — a specific task, traced to a guest's words
- *   Prove   — did that task move the rating, and is the sample big enough to say so
- *   Compare — where the local market is still ahead, and what it does differently
+ * The dashboard is one continuous argument in three acts, now organised as
+ * three tabs rather than one long scroll:
+ *   Map & Actions — where the properties are, and a specific task traced to a
+ *                   guest's words (the map is just a second way into the same
+ *                   property filter the dropdown below it already offers)
+ *   Prove         — did that task move the rating, and is the sample big
+ *                   enough to say so
+ *   Compare       — where the local market is still ahead, and what it does
+ *                   differently
  *
- * Selecting an action item in Act re-scopes both Prove and Compare, so the three
- * panels always describe the same decision rather than three unrelated views.
+ * Selecting an action item on the first tab re-scopes both Prove and Compare
+ * and jumps straight to Prove, so the reader lands on the answer to the
+ * question they just asked rather than having to go look for it.
  */
 
 /** The action the demo opens on — the clearest end-to-end ROI story in the data. */
 const DEFAULT_SELECTED_ACTION_ID = 'ai-001';
 
+/** The dashboard's three sections. Order here drives both the tab bar and the guided flow. */
+const TABS = [
+  { id: 'portfolio', label: 'Map & Action Items' },
+  { id: 'effectiveness', label: 'Effectiveness Tracker' },
+  { id: 'compare', label: 'Benchmarking' },
+];
+
 export default function App() {
+  const [activeTabId, setActiveTabId] = useState(TABS[0].id);
+
   const [filters, setFilters] = useState({
     propertyId: ALL_FILTER_VALUE,
     category: ALL_FILTER_VALUE,
@@ -69,11 +86,28 @@ export default function App() {
     ? pricingRecommendations[selectedProperty.id]
     : null;
 
+  // Which property the map should highlight: whatever the property filter is
+  // explicitly narrowed to, falling back to the property behind the currently
+  // selected action so the map still shows "where am I" when arriving from Prove.
+  const highlightedPropertyId =
+    filters.propertyId !== ALL_FILTER_VALUE ? filters.propertyId : (selectedProperty?.id ?? null);
+
   // --- Handlers -----------------------------------------------------------
 
   /** Narrow one filter dimension while leaving the others untouched. */
   function handleFilterChange(dimension, value) {
     setFilters((previousFilters) => ({ ...previousFilters, [dimension]: value }));
+  }
+
+  /** A map pin sets the same property filter the dropdown above the list uses. */
+  function handleSelectPropertyOnMap(propertyId) {
+    handleFilterChange('propertyId', propertyId);
+  }
+
+  /** Picking a task is the start of the Prove flow, so it jumps straight there. */
+  function handleSelectAction(actionId) {
+    setSelectedActionId(actionId);
+    setActiveTabId('effectiveness');
   }
 
   /** Record the date a fix went live — the pivot the ROI chart splits on. */
@@ -96,37 +130,60 @@ export default function App() {
       <DashboardHeader propertyCount={properties.length} />
 
       <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
+        {/* Persistent across every tab — the headline ROI figure a reader
+            should see regardless of which section they're working in. */}
         <PortfolioHeroMetric impact={portfolioImpact} propertyCount={properties.length} />
 
-        <ActionItemsPanel
-          properties={properties}
-          visibleActionItems={visibleActionItems}
-          totalActionCount={resolvedActionItems.length}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          selectedActionId={selectedActionId}
-          onSelectAction={setSelectedActionId}
-        />
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+          <TabNav tabs={TABS} activeTabId={activeTabId} onSelectTab={setActiveTabId} />
+        </div>
 
-        <EffectivenessTracker
-          selectedAction={selectedAction}
-          property={selectedProperty}
-          pricingRecommendation={selectedPricingRecommendation}
-          isPricingDismissed={
-            selectedProperty ? dismissedPricingPropertyIds.includes(selectedProperty.id) : false
-          }
-          onMarkImplemented={handleMarkImplemented}
-          onDismissPricing={handleDismissPricing}
-        />
+        {activeTabId === 'portfolio' && (
+          <div className="space-y-6">
+            <PortfolioMap
+              properties={properties}
+              highlightedPropertyId={highlightedPropertyId}
+              onSelectProperty={handleSelectPropertyOnMap}
+            />
 
-        <BenchmarkingPanel
-          property={selectedProperty}
-          benchmark={selectedBenchmark}
-          internalDelta={
-            selectedProperty ? calculateInternalDelta(selectedProperty, properties) : 0
-          }
-          portfolioAverage={portfolioAverageRating}
-        />
+            <ActionItemsPanel
+              properties={properties}
+              visibleActionItems={visibleActionItems}
+              totalActionCount={resolvedActionItems.length}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              selectedActionId={selectedActionId}
+              onSelectAction={handleSelectAction}
+            />
+          </div>
+        )}
+
+        {activeTabId === 'effectiveness' && (
+          <EffectivenessTracker
+            selectedAction={selectedAction}
+            property={selectedProperty}
+            pricingRecommendation={selectedPricingRecommendation}
+            isPricingDismissed={
+              selectedProperty ? dismissedPricingPropertyIds.includes(selectedProperty.id) : false
+            }
+            onMarkImplemented={handleMarkImplemented}
+            onDismissPricing={handleDismissPricing}
+            onNavigateToActionItems={() => setActiveTabId('portfolio')}
+            onNavigateToBenchmarking={() => setActiveTabId('compare')}
+          />
+        )}
+
+        {activeTabId === 'compare' && (
+          <BenchmarkingPanel
+            property={selectedProperty}
+            benchmark={selectedBenchmark}
+            internalDelta={
+              selectedProperty ? calculateInternalDelta(selectedProperty, properties) : 0
+            }
+            portfolioAverage={portfolioAverageRating}
+            onNavigateToActionItems={() => setActiveTabId('portfolio')}
+          />
+        )}
 
         <footer className="pt-2 pb-6 text-center text-xs text-[var(--ink-muted)]">
           Frontend mockup · all data is fictional · competitor properties are anonymised by type

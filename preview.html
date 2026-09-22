@@ -82,6 +82,15 @@
   /* Chart series roles: context is muted, the outcome carries the accent */
   --series-before: #898781;
   --series-after: #2a78d6;
+
+  /* Portfolio map geography — decorative only, never reused as data colour.
+     Muted enough to sit behind the accent-coloured property pins. */
+  --map-water: #b7c9d6;
+  --map-park: #c3d0bc;
+  --map-plaza: #e3d7bf;
+  --map-old-city: #e7e0d0;
+  --map-old-city-line: #cabf9e;
+  --map-street: #dedcd3;
 }
 
 html,
@@ -201,10 +210,16 @@ const properties = [
   {
     id: 'apt-3-old-city',
     name: 'Apt 3 — Old City',
+    district: 'Old City',
     bedrooms: 2,
     adr: 185,
     occupancyRate: 0.72,
     overallRating: 4.5,
+    // Position in the portfolio map's 760×420 illustrative coordinate space,
+    // and which side of the pin its label should be anchored to so labels
+    // don't collide. See src/components/map/PortfolioMap.jsx.
+    mapPosition: { x: 430, y: 195 },
+    mapLabelAnchor: 'bottom',
     ratingHistory: [
       { date: '2026-01-31', category: 'Cleanliness', rating: 4.1, reviewCount: 6 },
       { date: '2026-02-28', category: 'Cleanliness', rating: 4.0, reviewCount: 5 },
@@ -223,10 +238,13 @@ const properties = [
   {
     id: 'loft-12-harbor-view',
     name: 'Loft 12 — Harbor View',
+    district: 'Harbor District',
     bedrooms: 1,
     adr: 210,
     occupancyRate: 0.81,
     overallRating: 4.8,
+    mapPosition: { x: 610, y: 300 },
+    mapLabelAnchor: 'right',
     ratingHistory: [
       { date: '2026-01-31', category: 'Communication', rating: 4.5, reviewCount: 5 },
       { date: '2026-02-28', category: 'Communication', rating: 4.6, reviewCount: 6 },
@@ -249,10 +267,13 @@ const properties = [
   {
     id: 'garden-house-north',
     name: 'Garden House — North Quarter',
+    district: 'North Quarter',
     bedrooms: 3,
     adr: 265,
     occupancyRate: 0.64,
     overallRating: 4.6,
+    mapPosition: { x: 330, y: 70 },
+    mapLabelAnchor: 'bottom',
     ratingHistory: [
       { date: '2026-01-31', category: 'Communication', rating: 4.2, reviewCount: 4 },
       { date: '2026-02-28', category: 'Communication', rating: 4.1, reviewCount: 5 },
@@ -272,10 +293,13 @@ const properties = [
   {
     id: 'studio-5-market-lane',
     name: 'Studio 5 — Market Lane',
+    district: 'Market Lane',
     bedrooms: 1,
     adr: 130,
     occupancyRate: 0.88,
     overallRating: 4.3,
+    mapPosition: { x: 155, y: 200 },
+    mapLabelAnchor: 'left',
     ratingHistory: [
       // Deliberately sparse: this property is the "Gathering data" case. Three
       // points and seven reviews is not enough to draw an honest trend.
@@ -295,10 +319,13 @@ const properties = [
   {
     id: 'townhouse-7-riverside',
     name: 'Townhouse 7 — Riverside',
+    district: 'Riverside',
     bedrooms: 3,
     adr: 290,
     occupancyRate: 0.69,
     overallRating: 4.7,
+    mapPosition: { x: 250, y: 335 },
+    mapLabelAnchor: 'bottom',
     ratingHistory: [
       // Amenities is flat — the matching action is still In Progress, so there
       // is no implementation date and therefore no before/after split to claim.
@@ -1055,6 +1082,72 @@ function FilterSelect({ label, value, options, onChange }) {
   );
 }
 
+      // ─── src/components/ui/TabNav.jsx ───
+/**
+ * The dashboard's primary navigation.
+ *
+ * Follows the standard ARIA tabs pattern (`role="tablist"` /
+ * `role="tab"` / `aria-selected`) so the active section is announced to
+ * assistive tech, not just implied by colour. Each tab keeps the same "act"
+ * chip language used inside its panel's SectionHeader, so the label a reader
+ * clicks and the label they land on are the same word.
+ */
+function TabNav({ tabs, activeTabId, onSelectTab }) {
+  return (
+    <div role="tablist" aria-label="Dashboard sections" className="flex gap-6 px-6">
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTabId;
+
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onSelectTab(tab.id)}
+            className={`relative py-3.5 text-sm font-medium transition-colors ${
+              isActive
+                ? 'text-[var(--ink-primary)]'
+                : 'text-[var(--ink-secondary)] hover:text-[var(--ink-primary)]'
+            }`}
+          >
+            {tab.label}
+            {/* Active indicator drawn as its own element rather than a border,
+                so it doesn't nudge the tab's height by a pixel when toggled. */}
+            <span
+              aria-hidden="true"
+              className={`absolute right-0 bottom-0 left-0 h-0.5 rounded-full transition-colors ${
+                isActive ? 'bg-[var(--accent)]' : 'bg-transparent'
+              }`}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+      // ─── src/components/ui/TabLink.jsx ───
+/**
+ * A cross-tab navigation link — the connective tissue between the three
+ * dashboard sections now that they live on separate tabs instead of one
+ * scrolling page. Styled as a link, not a button, because it moves the reader
+ * somewhere rather than changing anything.
+ */
+function TabLink({ direction = 'forward', children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-strong)]"
+    >
+      {direction === 'back' && <span aria-hidden="true">←</span>}
+      {children}
+      {direction === 'forward' && <span aria-hidden="true">→</span>}
+    </button>
+  );
+}
+
       // ─── src/components/DashboardHeader.jsx ───
 /**
  * Product masthead.
@@ -1162,6 +1255,250 @@ function PortfolioHeroMetric({ impact, propertyCount }) {
         {revenueModel.caption}
       </p>
     </section>
+  );
+}
+
+      // ─── src/components/map/PortfolioMap.jsx ───
+
+/**
+ * The portfolio map — an illustrative, not geographic, layout of the managed
+ * properties. It exists to answer one question at a glance: "where are my
+ * units, and which one am I looking at?" — then to offer a second way into the
+ * same filter the dropdown above the action-item list already provides.
+ *
+ * Three technical choices worth noting:
+ *   • the town itself (river, park, plaza, streets, district labels) is a
+ *     decorative background SVG with a fixed 760×420 coordinate space;
+ *   • the property pins are real HTML buttons absolutely positioned as a
+ *     percentage of that same 760×420 space, layered on top. Real buttons
+ *     get real focus rings and real hover states for free — cheaper and more
+ *     accessible than making raw SVG shapes interactive;
+ *   • the SVG background and the pin overlay are two separate layers, only
+ *     the first of which is clipped to the card's rounded corners. Pin
+ *     labels are fixed-pixel HTML, not vector, so they don't shrink with a
+ *     narrower card the way the SVG art does — clipping them to the same
+ *     rounded box would crop a label's text at small widths. Left unclipped,
+ *     a label that needs a few extra pixels near an edge spills gracefully
+ *     into the card's own padding instead of losing a word.
+ * The two coordinate spaces only line up because the container's aspect
+ * ratio is locked to 760/420 (`aspect-[760/420]` below), so a pin at
+ * map-space (x, y) and a percentage position of (x/760, y/420) land on the
+ * same pixel regardless of how wide the card actually renders.
+ */
+
+const MAP_WIDTH = 760;
+const MAP_HEIGHT = 420;
+
+/** Convert a position in the map's coordinate space to a CSS percentage pair. */
+function toPercentPosition({ x, y }) {
+  return { left: `${(x / MAP_WIDTH) * 100}%`, top: `${(y / MAP_HEIGHT) * 100}%` };
+}
+
+/** Where a pin's label sits relative to its dot, keyed by each property's `mapLabelAnchor`. */
+const LABEL_ANCHOR_STYLES = {
+  top: { transform: 'translate(-50%, calc(-100% - 10px))', textAlign: 'center' },
+  bottom: { transform: 'translate(-50%, 10px)', textAlign: 'center' },
+  left: { transform: 'translate(calc(-100% - 10px), -50%)', textAlign: 'right' },
+  right: { transform: 'translate(10px, -50%)', textAlign: 'left' },
+};
+
+/**
+ * The decorative town itself — river, park, old-city outline, market plaza,
+ * a loose street grid, and district labels. Purely illustrative geography;
+ * every shape is a simple curve or primitive, not traced map data.
+ */
+function TownIllustration() {
+  return (
+    <svg
+      viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+      className="absolute inset-0 h-full w-full"
+      aria-hidden="true"
+    >
+      {/* Loose street grid, sketched rather than ruled, so it reads as an old
+          town rather than a survey drawing. */}
+      <g stroke="var(--map-street)" strokeWidth="2" fill="none">
+        <path d="M 0 120 C 200 110, 500 130, 760 100" />
+        <path d="M 0 260 C 180 250, 420 270, 760 250" />
+        <path d="M 120 0 C 130 150, 100 300, 130 420" />
+        <path d="M 430 0 C 420 90, 450 160, 420 420" />
+        <path d="M 600 0 C 610 120, 580 240, 620 420" />
+      </g>
+
+      {/* River, flowing from the west edge down into the harbor. */}
+      <path
+        d="M -10 235 C 120 265, 180 305, 250 335 C 330 365, 480 345, 560 322
+           C 610 308, 650 302, 780 312"
+        stroke="var(--map-water)"
+        strokeWidth="26"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.8"
+      />
+      {/* Harbor: the river mouth widening into a bay at the corner. */}
+      <ellipse cx="690" cy="325" rx="150" ry="110" fill="var(--map-water)" opacity="0.5" />
+
+      {/* North Quarter park. */}
+      <ellipse cx="330" cy="65" rx="100" ry="52" fill="var(--map-park)" opacity="0.7" />
+
+      {/* Old City — a rounded historic core, distinct from the street grid. */}
+      <circle
+        cx="430"
+        cy="195"
+        r="78"
+        fill="var(--map-old-city)"
+        stroke="var(--map-old-city-line)"
+        strokeWidth="2"
+        opacity="0.85"
+      />
+
+      {/* Market Lane's plaza. */}
+      <rect
+        x="118"
+        y="168"
+        width="74"
+        height="58"
+        rx="6"
+        fill="var(--map-plaza)"
+        stroke="var(--border)"
+        strokeWidth="1"
+      />
+
+      {/* District labels — the map's captions, set in the data-furniture face. */}
+      <g
+        fill="var(--ink-muted)"
+        fontSize="11"
+        fontFamily="var(--font-mono)"
+        letterSpacing="0.08em"
+      >
+        <text x="330" y="24" textAnchor="middle">
+          NORTH QUARTER
+        </text>
+        <text x="430" y="290" textAnchor="middle">
+          OLD CITY
+        </text>
+        <text x="155" y="155" textAnchor="middle">
+          MARKET LANE
+        </text>
+        <text x="130" y="405" textAnchor="start">
+          RIVERSIDE
+        </text>
+        <text x="700" y="405" textAnchor="end">
+          HARBOR DISTRICT
+        </text>
+      </g>
+
+      {/* Compass — a small, real cartographic convention that costs nothing
+          and confirms the map is oriented, not just decorative. */}
+      <g transform="translate(715, 34)" fill="var(--ink-muted)">
+        <path d="M 0 -14 L 6 4 L 0 -1 L -6 4 Z" />
+        <text x="0" y="20" textAnchor="middle" fontSize="10" fontFamily="var(--font-mono)">
+          N
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * The bit of the name worth putting on a pin. The district is already
+ * captioned on the map itself, so repeating "— Old City" on every label would
+ * just be the slowest way to say something the map already says; the unit
+ * identifier alone ("Apt 3", "Loft 12") is what a manager actually scans for,
+ * and it's short enough to hold to one line at any card width.
+ */
+function shortPropertyLabel(propertyName) {
+  return propertyName.split(' — ')[0];
+}
+
+/** One property, as a real button positioned over the town illustration. */
+function PropertyPin({ property, isHighlighted, onSelect }) {
+  const dotPosition = toPercentPosition(property.mapPosition);
+  const labelStyle = LABEL_ANCHOR_STYLES[property.mapLabelAnchor];
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(property.id)}
+      aria-pressed={isHighlighted}
+      title={property.name}
+      className="group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+      style={dotPosition}
+    >
+      {/* The dot. A surface-coloured ring keeps it legible over any part of
+          the illustration behind it, the same device used on chart markers. */}
+      <span
+        className={`block h-3.5 w-3.5 rounded-full ring-2 ring-[var(--surface)] transition-transform group-hover:scale-125 ${
+          isHighlighted ? 'bg-[var(--accent)]' : 'bg-[var(--ink-muted)]'
+        }`}
+      />
+
+      {/* The label. Always visible — five properties is few enough that
+          direct-labelling all of them beats hover-only discovery. Kept to a
+          narrow, short max-width so it holds one line and never needs to
+          wrap into the multi-line overflow risk a full property name would. */}
+      <span
+        className="pointer-events-none absolute top-1/2 left-1/2 w-max max-w-[7rem] leading-tight whitespace-nowrap"
+        style={labelStyle}
+      >
+        <span
+          className={`block text-xs font-semibold ${
+            isHighlighted ? 'text-[var(--accent-strong)]' : 'text-[var(--ink-primary)]'
+          }`}
+        >
+          {shortPropertyLabel(property.name)}
+        </span>
+        <span className="block text-[11px] text-[var(--ink-muted)]">
+          {formatRating(property.overallRating)}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function PortfolioMap({ properties, highlightedPropertyId, onSelectProperty }) {
+  return (
+    <Card>
+      <div className="border-b border-[var(--border)] px-6 py-4">
+        <h3 className="text-sm font-semibold text-[var(--ink-primary)]">Portfolio map</h3>
+        <p className="mt-1 text-xs text-[var(--ink-secondary)]">
+          Click a property to filter the action items below to it.
+        </p>
+      </div>
+
+      <div className="px-6 py-5">
+        {/* The aspect ratio lock described above — this is what keeps the
+            percentage-positioned pins aligned with the SVG's own coordinates.
+            This outer box is intentionally NOT clipped: only the decorative
+            art beneath the pins is, so a label near an edge can spill into
+            the card's padding instead of having its text cropped. */}
+        <div className="relative aspect-[760/420] w-full">
+          <div className="absolute inset-0 overflow-hidden rounded-lg bg-[var(--surface-subtle)]">
+            <TownIllustration />
+          </div>
+          {properties.map((property) => (
+            <PropertyPin
+              key={property.id}
+              property={property}
+              isHighlighted={property.id === highlightedPropertyId}
+              onSelect={onSelectProperty}
+            />
+          ))}
+        </div>
+
+        {/* Legend — the map's only two colour states, named directly rather
+            than left for the reader to infer. */}
+        <div className="mt-4 flex items-center gap-5">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" aria-hidden="true" />
+            <span className="text-xs text-[var(--ink-secondary)]">Currently filtered</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--ink-muted)]" aria-hidden="true" />
+            <span className="text-xs text-[var(--ink-secondary)]">Other properties</span>
+          </span>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -1951,6 +2288,8 @@ function EffectivenessTracker({
   isPricingDismissed,
   onMarkImplemented,
   onDismissPricing,
+  onNavigateToActionItems,
+  onNavigateToBenchmarking,
 }) {
   if (!selectedAction || !property) {
     return (
@@ -1960,6 +2299,11 @@ function EffectivenessTracker({
           title="Effectiveness & pricing tracker"
           description="Before/after evidence that a completed action changed the rating it was meant to change."
         />
+        <div className="px-6 pt-5">
+          <TabLink direction="back" onClick={onNavigateToActionItems}>
+            Back to action items
+          </TabLink>
+        </div>
         <NoSelectionState />
       </Card>
     );
@@ -1992,6 +2336,10 @@ function EffectivenessTracker({
       />
 
       <div className="space-y-6 px-6 py-5">
+        <TabLink direction="back" onClick={onNavigateToActionItems}>
+          Back to action items
+        </TabLink>
+
         {/* What is being measured, and the control that sets the pivot date. */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -2049,6 +2397,12 @@ function EffectivenessTracker({
             totalReviews={categoryHistory.reduce((sum, entry) => sum + entry.reviewCount, 0)}
           />
         )}
+
+        <div className="border-t border-[var(--border)] pt-5">
+          <TabLink direction="forward" onClick={onNavigateToBenchmarking}>
+            See how {property.name} compares to the local market
+          </TabLink>
+        </div>
       </div>
     </Card>
   );
@@ -2301,6 +2655,7 @@ function BenchmarkingPanel({
   benchmark,
   internalDelta,
   portfolioAverage,
+  onNavigateToActionItems,
 }) {
   if (!property || !benchmark) {
     return (
@@ -2310,6 +2665,11 @@ function BenchmarkingPanel({
           title="Benchmarking"
           description="How this property sits against the rest of your portfolio and the local market."
         />
+        <div className="px-6 pt-5">
+          <TabLink direction="back" onClick={onNavigateToActionItems}>
+            Back to action items
+          </TabLink>
+        </div>
         <p className="px-6 py-16 text-center text-sm text-[var(--ink-muted)]">
           Select an action item to benchmark its property.
         </p>
@@ -2326,6 +2686,10 @@ function BenchmarkingPanel({
       />
 
       <div className="space-y-5 px-6 py-5">
+        <TabLink direction="back" onClick={onNavigateToActionItems}>
+          Back to action items
+        </TabLink>
+
         <div className="grid gap-5 sm:grid-cols-2">
           <InternalBenchmark internalDelta={internalDelta} portfolioAverage={portfolioAverage} />
           <ExternalBenchmark
@@ -2350,19 +2714,34 @@ function BenchmarkingPanel({
  * — derived values are recomputed on each render from the same pure helpers,
  * which keeps the data flow readable end to end.
  *
- * The dashboard is one continuous argument in three acts:
- *   Act     — a specific task, traced to a guest's words
- *   Prove   — did that task move the rating, and is the sample big enough to say so
- *   Compare — where the local market is still ahead, and what it does differently
+ * The dashboard is one continuous argument in three acts, now organised as
+ * three tabs rather than one long scroll:
+ *   Map & Actions — where the properties are, and a specific task traced to a
+ *                   guest's words (the map is just a second way into the same
+ *                   property filter the dropdown below it already offers)
+ *   Prove         — did that task move the rating, and is the sample big
+ *                   enough to say so
+ *   Compare       — where the local market is still ahead, and what it does
+ *                   differently
  *
- * Selecting an action item in Act re-scopes both Prove and Compare, so the three
- * panels always describe the same decision rather than three unrelated views.
+ * Selecting an action item on the first tab re-scopes both Prove and Compare
+ * and jumps straight to Prove, so the reader lands on the answer to the
+ * question they just asked rather than having to go look for it.
  */
 
 /** The action the demo opens on — the clearest end-to-end ROI story in the data. */
 const DEFAULT_SELECTED_ACTION_ID = 'ai-001';
 
+/** The dashboard's three sections. Order here drives both the tab bar and the guided flow. */
+const TABS = [
+  { id: 'portfolio', label: 'Map & Action Items' },
+  { id: 'effectiveness', label: 'Effectiveness Tracker' },
+  { id: 'compare', label: 'Benchmarking' },
+];
+
 function App() {
+  const [activeTabId, setActiveTabId] = useState(TABS[0].id);
+
   const [filters, setFilters] = useState({
     propertyId: ALL_FILTER_VALUE,
     category: ALL_FILTER_VALUE,
@@ -2395,11 +2774,28 @@ function App() {
     ? pricingRecommendations[selectedProperty.id]
     : null;
 
+  // Which property the map should highlight: whatever the property filter is
+  // explicitly narrowed to, falling back to the property behind the currently
+  // selected action so the map still shows "where am I" when arriving from Prove.
+  const highlightedPropertyId =
+    filters.propertyId !== ALL_FILTER_VALUE ? filters.propertyId : (selectedProperty?.id ?? null);
+
   // --- Handlers -----------------------------------------------------------
 
   /** Narrow one filter dimension while leaving the others untouched. */
   function handleFilterChange(dimension, value) {
     setFilters((previousFilters) => ({ ...previousFilters, [dimension]: value }));
+  }
+
+  /** A map pin sets the same property filter the dropdown above the list uses. */
+  function handleSelectPropertyOnMap(propertyId) {
+    handleFilterChange('propertyId', propertyId);
+  }
+
+  /** Picking a task is the start of the Prove flow, so it jumps straight there. */
+  function handleSelectAction(actionId) {
+    setSelectedActionId(actionId);
+    setActiveTabId('effectiveness');
   }
 
   /** Record the date a fix went live — the pivot the ROI chart splits on. */
@@ -2422,37 +2818,60 @@ function App() {
       <DashboardHeader propertyCount={properties.length} />
 
       <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
+        {/* Persistent across every tab — the headline ROI figure a reader
+            should see regardless of which section they're working in. */}
         <PortfolioHeroMetric impact={portfolioImpact} propertyCount={properties.length} />
 
-        <ActionItemsPanel
-          properties={properties}
-          visibleActionItems={visibleActionItems}
-          totalActionCount={resolvedActionItems.length}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          selectedActionId={selectedActionId}
-          onSelectAction={setSelectedActionId}
-        />
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+          <TabNav tabs={TABS} activeTabId={activeTabId} onSelectTab={setActiveTabId} />
+        </div>
 
-        <EffectivenessTracker
-          selectedAction={selectedAction}
-          property={selectedProperty}
-          pricingRecommendation={selectedPricingRecommendation}
-          isPricingDismissed={
-            selectedProperty ? dismissedPricingPropertyIds.includes(selectedProperty.id) : false
-          }
-          onMarkImplemented={handleMarkImplemented}
-          onDismissPricing={handleDismissPricing}
-        />
+        {activeTabId === 'portfolio' && (
+          <div className="space-y-6">
+            <PortfolioMap
+              properties={properties}
+              highlightedPropertyId={highlightedPropertyId}
+              onSelectProperty={handleSelectPropertyOnMap}
+            />
 
-        <BenchmarkingPanel
-          property={selectedProperty}
-          benchmark={selectedBenchmark}
-          internalDelta={
-            selectedProperty ? calculateInternalDelta(selectedProperty, properties) : 0
-          }
-          portfolioAverage={portfolioAverageRating}
-        />
+            <ActionItemsPanel
+              properties={properties}
+              visibleActionItems={visibleActionItems}
+              totalActionCount={resolvedActionItems.length}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              selectedActionId={selectedActionId}
+              onSelectAction={handleSelectAction}
+            />
+          </div>
+        )}
+
+        {activeTabId === 'effectiveness' && (
+          <EffectivenessTracker
+            selectedAction={selectedAction}
+            property={selectedProperty}
+            pricingRecommendation={selectedPricingRecommendation}
+            isPricingDismissed={
+              selectedProperty ? dismissedPricingPropertyIds.includes(selectedProperty.id) : false
+            }
+            onMarkImplemented={handleMarkImplemented}
+            onDismissPricing={handleDismissPricing}
+            onNavigateToActionItems={() => setActiveTabId('portfolio')}
+            onNavigateToBenchmarking={() => setActiveTabId('compare')}
+          />
+        )}
+
+        {activeTabId === 'compare' && (
+          <BenchmarkingPanel
+            property={selectedProperty}
+            benchmark={selectedBenchmark}
+            internalDelta={
+              selectedProperty ? calculateInternalDelta(selectedProperty, properties) : 0
+            }
+            portfolioAverage={portfolioAverageRating}
+            onNavigateToActionItems={() => setActiveTabId('portfolio')}
+          />
+        )}
 
         <footer className="pt-2 pb-6 text-center text-xs text-[var(--ink-muted)]">
           Frontend mockup · all data is fictional · competitor properties are anonymised by type
