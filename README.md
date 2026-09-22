@@ -136,4 +136,13 @@ invisible chart for anyone with reduced-motion settings or a static capture.
 
 ---
 
+## Making it real
+
+This is a frontend mockup by design — see [`ROADMAP.md`](ROADMAP.md) for a
+short plan on what a real backend would take: pulling in actual reviews,
+generating action items with an LLM, tracking effectiveness server-side, and
+sourcing competitor data for benchmarking.
+
+---
+
 All data is fictional. This is a frontend mockup — there is no backend.
