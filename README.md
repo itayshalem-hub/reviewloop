@@ -5,6 +5,21 @@
 A frontend MVP mockup of a B2B SaaS dashboard for property management companies
 running 10–50 vacation rentals.
 
+## Why I built this
+
+I'm fascinated by how AI can take data that's genuinely hard to track, in this
+case hundreds of scattered guest reviews, and turn it into a clear conclusion.
+ReviewLoop is how I tested this: not just summarizing reviews, but turning
+them into specific tasks, proving whether it was effective, and being honest
+about when the evidence isn't strong enough.
+
+I'm building projects like this as I work toward AI product roles. It's less
+a finished app and more a way of thinking through what AI-native product
+management actually looks like in practice, where the model might actually
+turn raw data into revenue, but also knows to say when it can't determine a
+conclusion. See [*Product decisions worth noting*](#product-decisions-worth-noting)
+below.
+
 The product answers one question a PMC owner actually asks of a review tool:
 **what did this earn me?** It does that in three acts, organised as three tabs.
 
